@@ -1,6 +1,6 @@
 {
   "name": "mcp-n8n-builder",
-  "version": "0.0.4",
+  "version": "0.0.1",
   "description": "MCP server for building n8n workflows",
   "type": "module",
   "main": "dist/index.js",
@@ -32,7 +32,8 @@
   "devDependencies": {
     "@changesets/cli": "^2.28.1",
     "@types/node": "^22.13.10",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.2",
+    "zod": "^3.24.2"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.7.0"

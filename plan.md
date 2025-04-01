@@ -2,41 +2,59 @@
 
 ## Overview
 
-This document outlines the plan for creating a Model Context Protocol (MCP) server that enables programmatic creation and management of n8n workflows. The MCP server will provide tools and resources for interacting with n8n's REST API, allowing AI assistants to build, modify, and manage workflows without direct user intervention.
+This document outlines the plan for creating a Model Context Protocol
+(MCP) server that enables programmatic creation and management of n8n
+workflows. The MCP server will provide tools and resources for
+interacting with n8n's REST API, allowing AI assistants to build,
+modify, and manage workflows without direct user intervention.
 
 ## What is n8n?
 
-n8n is an open-source workflow automation tool that allows users to connect various services and APIs to create automated workflows. It provides a visual interface for building workflows, as well as a REST API for programmatic access.
+n8n is an open-source workflow automation tool that allows users to
+connect various services and APIs to create automated workflows. It
+provides a visual interface for building workflows, as well as a REST
+API for programmatic access.
 
 ## Existing Implementations
 
 Several MCP servers for n8n workflow management already exist:
 
-1. **[n8n-workflow-builder](https://github.com/makafeli/n8n-workflow-builder)** (by makafeli) - A mature MCP server with 134 stars on GitHub
+1. **[n8n-workflow-builder](https://github.com/makafeli/n8n-workflow-builder)**
+   (by makafeli) - A mature MCP server with 134 stars on GitHub
 
-   - Provides tools for workflow management (create, read, update, delete)
+   - Provides tools for workflow management (create, read, update,
+     delete)
    - Supports workflow activation/deactivation
    - Includes execution management
    - Last updated: February 2025
 
-2. **[mcp-n8n-workflow-builder](https://github.com/salacoste/mcp-n8n-workflow-builder)** (by salacoste) - Implementation focused on Claude/Cursor integration
+2. **[mcp-n8n-workflow-builder](https://github.com/salacoste/mcp-n8n-workflow-builder)**
+   (by salacoste) - Implementation focused on Claude/Cursor
+   integration
 
    - Features intelligent detection of trigger nodes
    - Handles compatibility with the n8n API
    - Includes enhanced workflow testing and error handling
 
-3. **[n8n-mcp-server](https://github.com/illuminaresolutions/n8n-mcp-server)** (by illuminaresolutions) - A more general n8n MCP server implementation
-   - Provides access to n8n workflows, executions, credentials, and more
-   - Designed for secure and standardized interaction with n8n instances
+3. **[n8n-mcp-server](https://github.com/illuminaresolutions/n8n-mcp-server)**
+   (by illuminaresolutions) - A more general n8n MCP server
+   implementation
+   - Provides access to n8n workflows, executions, credentials, and
+     more
+   - Designed for secure and standardized interaction with n8n
+     instances
 
 ### Lessons Learned from Existing Implementations
 
-Based on open issues and discussions in these repositories:
+Based on open issues, discussions in these repositories, and our own
+testing:
 
 1. **Workflow Complexity Handling**:
 
-   - Issue: Complex workflows with many nodes and connections can be difficult to create programmatically
-   - Solution: Implement a modular approach with templates and building blocks
+   - Issue: Complex workflows with many nodes and connections can be
+     difficult to create programmatically
+   - Solution: Implement a modular approach with templates and
+     building blocks
 
 2. **API Version Compatibility**:
 
@@ -46,15 +64,42 @@ Based on open issues and discussions in these repositories:
 3. **Error Handling and Validation**:
 
    - Issue: Insufficient error handling leads to cryptic failures
-   - Solution: Comprehensive validation with Zod and detailed error messages
+   - Solution: Comprehensive validation with Zod and detailed error
+     messages
 
 4. **Credential Management**:
+
    - Issue: Secure handling of credentials is challenging
-   - Solution: Implement secure credential storage and reference mechanisms
+   - Solution: Implement secure credential storage and reference
+     mechanisms
+
+5. **Schema Validation vs. API Expectations**:
+
+   - Issue: Discrepancies between schema validation and what the n8n
+     API actually expects
+   - Example: Our schema initially defined `position` as an object
+     with `x` and `y` properties, but the n8n API expects an array [x,
+     y]
+   - Solution: Align schema validation with actual API expectations or
+     implement transformation layers
+
+6. **API Endpoint Format**:
+
+   - Issue: Confusion about the correct API endpoint format
+   - Solution: Use the standard format `/api/v1` without the
+     `/settings` part
+
+7. **Workflow Activation Requirements**:
+   - Issue: Not all workflows can be activated
+   - Solution: Document that activating a workflow requires at least
+     one trigger node that can automatically start the workflow
+     (schedule, webhook, etc.)
 
 ## Architecture
 
-Following the architecture pattern of [mcp-omnisearch](https://github.com/spences10/mcp-omnisearch), our implementation will use a modular approach:
+Following the architecture pattern of
+[mcp-omnisearch](https://github.com/spences10/mcp-omnisearch), our
+implementation will use a modular approach:
 
 ```mermaid
 graph TD
@@ -112,20 +157,18 @@ graph TD
 
 ## Schema Design with Zod
 
-We'll use Zod for schema validation throughout the application. Here's an example of how we'll define schemas:
+We'll use Zod for schema validation throughout the application. Here's
+an example of how we'll define schemas:
 
 ```typescript
-import { z } from "zod";
+import { z } from 'zod';
 
 // Node schema
 export const NodeSchema = z.object({
 	id: z.string(),
 	name: z.string(),
 	type: z.string(),
-	position: z.object({
-		x: z.number(),
-		y: z.number(),
-	}),
+	position: z.array(z.number()).length(2),
 	parameters: z.record(z.any()).optional(),
 	typeVersion: z.number().optional(),
 	credentials: z.record(z.any()).optional(),
@@ -348,19 +391,19 @@ The MCP server will be configured via environment variables:
 // Environment variables
 export const config = {
 	// n8n API configuration
-	n8nHost: process.env.N8N_HOST || "http://localhost:5678/api/",
-	n8nApiKey: process.env.N8N_API_KEY || "",
+	n8nHost: process.env.N8N_HOST || 'http://localhost:5678/api/',
+	n8nApiKey: process.env.N8N_API_KEY || '',
 
 	// MCP server configuration
-	serverName: process.env.SERVER_NAME || "n8n-workflow-builder",
-	serverVersion: process.env.SERVER_VERSION || "1.0.0",
+	serverName: process.env.SERVER_NAME || 'n8n-workflow-builder',
+	serverVersion: process.env.SERVER_VERSION || '1.0.0',
 
 	// Logging configuration
-	logLevel: process.env.LOG_LEVEL || "info",
+	logLevel: process.env.LOG_LEVEL || 'info',
 
 	// Cache configuration
-	cacheEnabled: process.env.CACHE_ENABLED === "true",
-	cacheTTL: parseInt(process.env.CACHE_TTL || "300", 10),
+	cacheEnabled: process.env.CACHE_ENABLED === 'true',
+	cacheTTL: parseInt(process.env.CACHE_TTL || '300', 10),
 };
 ```
 
@@ -391,6 +434,12 @@ export const config = {
 
 ## Conclusion
 
-This MCP server will provide a powerful interface for AI assistants to create and manage n8n workflows. By leveraging the lessons learned from existing implementations and following best practices for MCP server development, we can create a robust and secure solution.
+This MCP server will provide a powerful interface for AI assistants to
+create and manage n8n workflows. By leveraging the lessons learned
+from existing implementations and following best practices for MCP
+server development, we can create a robust and secure solution.
 
-The modular architecture and comprehensive schema validation will ensure that the server is maintainable and extensible, while the comprehensive tool and resource implementations will provide a rich interface for AI assistants to work with.
+The modular architecture and comprehensive schema validation will
+ensure that the server is maintainable and extensible, while the
+comprehensive tool and resource implementations will provide a rich
+interface for AI assistants to work with.
