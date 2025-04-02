@@ -1,15 +1,14 @@
-# Setup Guide
+# Setup and Usage Guide
 
-This document provides a guide on how to set up the n8n Workflow
-Builder MCP server.
+This document provides a guide on how to set up and use the n8n
+Workflow Builder MCP server.
 
 ## Prerequisites
 
-Before setting up the MCP server, you need to have:
+Before using the MCP server, you need to have:
 
-1. Node.js (v16 or later) installed
-2. An n8n instance running and accessible via its REST API
-3. An API key for the n8n instance
+1. An n8n instance running and accessible via its REST API
+2. An API key for the n8n instance
 
 ## Installing n8n
 
@@ -50,37 +49,55 @@ To get an API key for your n8n instance:
 7. Click "Generate"
 8. Copy the generated API key (you won't be able to see it again)
 
-## Installing the MCP Server
+## Configuring Claude to Use the MCP Server
 
-1. Clone the repository:
+Most users will interact with this tool through MCP configuration
+files rather than direct installation. To configure Claude to use the
+MCP server, you need to add it to the MCP settings file:
 
-```bash
-git clone https://github.com/yourusername/mcp-n8n-builder.git
-cd mcp-n8n-builder
+### For Claude Desktop App
+
+Edit the Claude desktop configuration file:
+
+- macOS:
+  `~/Library/Application Support/Claude/claude_desktop_config.json`
+- Windows: `%APPDATA%\Claude\claude_desktop_config.json`
+- Linux: `~/.config/Claude/claude_desktop_config.json`
+
+Add the following to the `mcpServers` object:
+
+```json
+"n8n-workflow-builder": {
+  "command": "npx",
+  "args": [
+    "-y",
+    "mcp-n8n-builder"
+  ],
+  "env": {
+    "N8N_HOST": "https://your-n8n-instance.com/api/v1",
+    "N8N_API_KEY": "your-api-key",
+    "OUTPUT_VERBOSITY": "concise"
+  }
+}
 ```
 
-2. Install dependencies:
+### For WSL Users
 
-```bash
-pnpm install
+If you are a WSL user, you need to have a config that uses the
+`wsl.exe` binary to pass to Linux bash:
+
+```json
+"n8n-workflow-builder": {
+  "command": "wsl.exe",
+  "args": [
+    "bash",
+    "-c",
+    "N8N_HOST=https://your-n8n-instance.com/api/v1 N8N_API_KEY=your-api-key OUTPUT_VERBOSITY=concise npx -y mcp-n8n-builder"
+  ]
+}
 ```
 
-3. Build the project:
-
-```bash
-pnpm run build
-```
-
-## Configuring the MCP Server
-
-The MCP server can be configured using environment variables. The most
-important ones are:
-
-- `N8N_HOST`: The URL of your n8n API (default:
-  `http://localhost:5678/api/v1`)
-- `N8N_API_KEY`: Your n8n API key
-
-### Important Notes About Configuration
+### Important Configuration Notes
 
 1. **API Endpoint Format**:
 
@@ -96,91 +113,32 @@ important ones are:
      other event-based triggers
    - Workflows with only manual triggers cannot be activated
 
-You can set these environment variables in several ways:
+### Output Verbosity Configuration
 
-### Using a .env file
+The MCP server supports two output verbosity modes:
 
-Create a `.env` file in the root of the project:
+- **concise** (default): Only includes essential information in the
+  output, preserving context window space when used with AI assistants
+  like Claude.
+- **full**: Includes all details including full JSON responses, useful
+  for debugging or when you need complete information.
 
-```
-N8N_HOST=http://localhost:5678/api/v1
-N8N_API_KEY=your-api-key
-```
+This setting affects how verbose the output is for all MCP tools and
+resources. When working with large workflows or many executions, using
+the 'concise' mode can significantly reduce the amount of context
+window space consumed.
 
-### Using environment variables directly
+You can control the verbosity by setting the `OUTPUT_VERBOSITY`
+environment variable in your MCP configuration.
 
-```bash
-export N8N_HOST=http://localhost:5678/api/v1
-export N8N_API_KEY=your-api-key
-```
+## Using the MCP Server with Claude
 
-### Using the command line
+Once the MCP server is configured, you can use it with Claude to
+create and manage n8n workflows.
 
-```bash
-N8N_HOST=http://localhost:5678/api/v1 N8N_API_KEY=your-api-key pnpm start
-```
+### Verifying the Setup
 
-## Running the MCP Server
-
-Once you've configured the MCP server, you can start it:
-
-```bash
-pnpm start
-```
-
-## Configuring Claude to Use the MCP Server
-
-To configure Claude to use the MCP server, you need to add it to the
-MCP settings file:
-
-### For Claude Desktop App
-
-Edit the Claude desktop configuration file:
-
-- macOS:
-  `~/Library/Application Support/Claude/claude_desktop_config.json`
-- Windows: `%APPDATA%\Claude\claude_desktop_config.json`
-- Linux: `~/.config/Claude/claude_desktop_config.json`
-
-Add the following to the `mcpServers` object:
-
-```json
-"n8n-workflow-builder": {
-  "command": "node",
-  "args": ["/path/to/mcp-n8n-builder/dist/index.js"],
-  "env": {
-    "N8N_HOST": "http://localhost:5678/api/v1",
-    "N8N_API_KEY": "your-api-key"
-  }
-}
-```
-
-### For Claude Web App
-
-Edit the Claude web app MCP settings file:
-
-```json
-{
-	"mcpServers": {
-		"n8n-workflow-builder": {
-			"command": "node",
-			"args": ["/path/to/mcp-n8n-builder/dist/index.js"],
-			"env": {
-				"N8N_HOST": "http://localhost:5678/api/v1",
-				"N8N_API_KEY": "your-api-key"
-			}
-		}
-	}
-}
-```
-
-## Verifying the Setup
-
-To verify that the MCP server is set up correctly:
-
-1. Start the MCP server
-2. Start Claude
-3. Ask Claude to list all workflows in your n8n instance:
+To verify that the MCP server is set up correctly, ask Claude:
 
 ```
 Can you list all workflows in my n8n instance?
@@ -189,29 +147,132 @@ Can you list all workflows in my n8n instance?
 Claude should use the `list_workflows` tool to fetch all workflows
 from your n8n instance.
 
-## Troubleshooting
+### Common Usage Examples
 
-### Connection Issues
+Here are some examples of how to use the MCP server with Claude:
 
-If Claude can't connect to the MCP server, check:
+#### Listing Workflows
 
-1. The MCP server is running
-2. The path to the MCP server in the Claude configuration is correct
-3. The environment variables are set correctly
+```
+Can you list all workflows in my n8n instance?
+```
 
-### Authentication Issues
+#### Creating a Workflow
 
-If the MCP server can't authenticate with the n8n API, check:
+```
+Can you create a workflow that fetches data from an API and sends it to a Slack channel?
+```
 
-1. The `N8N_API_KEY` environment variable is set correctly
-2. The API key is valid and has not expired
-3. The n8n instance is running and accessible
+#### Creating Workflows with Different Trigger Types
 
-### API Version Issues
+1. **Manual Trigger Workflows**:
 
-If you're using a different version of n8n, the API endpoints might be
-different. Check:
+   ```
+   Can you create a workflow with a manual trigger that fetches a random joke?
+   ```
 
-1. The `N8N_HOST` environment variable includes the correct API
-   version
-2. The n8n API documentation for your version to ensure compatibility
+   - These workflows can only be started manually
+   - They cannot be activated for automatic execution
+
+2. **Schedule Trigger Workflows**:
+
+   ```
+   Can you create a workflow that runs every hour to fetch weather data?
+   ```
+
+   - These workflows run automatically on a schedule
+   - They can be activated for automatic execution
+
+3. **Webhook Trigger Workflows**:
+   ```
+   Can you create a workflow that listens for GitHub webhook events?
+   ```
+   - These workflows run when they receive an HTTP request
+   - They can be activated for automatic execution
+
+#### Updating a Workflow
+
+```
+Can you update the "API to Slack" workflow to add error handling?
+```
+
+#### Activating/Deactivating a Workflow
+
+```
+Can you activate the "API to Slack" workflow?
+```
+
+```
+Can you deactivate the "API to Slack" workflow?
+```
+
+#### Deleting a Workflow
+
+```
+Can you delete the "Test Workflow" workflow?
+```
+
+#### Viewing Executions
+
+```
+Can you show me the recent executions of the "API to Slack" workflow?
+```
+
+## Error Handling
+
+The MCP server uses Zod for schema validation to ensure that the data
+sent to and received from the n8n API is valid. If there is a
+validation error, the server will return an error message with details
+about the validation failure.
+
+For example, if you try to create a workflow without specifying a
+name, you will get an error like:
+
+```json
+{
+	"error": "Validation error: Required at workflow.name"
+}
+```
+
+The server also handles errors from the n8n API and returns them in a
+consistent format:
+
+```json
+{
+	"error": "n8n API error (404): Workflow not found"
+}
+```
+
+## Best Practices
+
+Here are some best practices for using the MCP server:
+
+1. **Use descriptive workflow names**: Use clear and descriptive names
+   for your workflows to make them easier to find and understand.
+
+2. **Add error handling**: Add error handling to your workflows to
+   handle failures gracefully.
+
+3. **Use tags**: Use tags to organize your workflows and make them
+   easier to find.
+
+4. **Monitor executions**: Regularly check the executions of your
+   workflows to ensure they are running as expected.
+
+5. **Keep workflows simple**: Keep your workflows focused on a single
+   task to make them easier to understand and maintain.
+
+6. **Document your workflows**: Add comments and documentation to your
+   workflows to make them easier to understand.
+
+7. **Test workflows before activating**: Test your workflows
+   thoroughly before activating them to ensure they work as expected.
+
+8. **Use environment variables**: Use environment variables for
+   sensitive information like API keys and passwords.
+
+9. **Backup your workflows**: Regularly backup your workflows to
+   prevent data loss.
+
+10. **Update n8n and the MCP server**: Keep n8n and the MCP server
+    updated to benefit from the latest features and security fixes.

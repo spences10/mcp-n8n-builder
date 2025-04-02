@@ -2,11 +2,11 @@
 
 ## Overview
 
-This document outlines the plan for creating a Model Context Protocol
-(MCP) server that enables programmatic creation and management of n8n
-workflows. The MCP server will provide tools and resources for
-interacting with n8n's REST API, allowing AI assistants to build,
-modify, and manage workflows without direct user intervention.
+This document outlines the plan for the Model Context Protocol (MCP)
+server that enables programmatic creation and management of n8n
+workflows. The MCP server provides tools and resources for interacting
+with n8n's REST API, allowing AI assistants to build, modify, and
+manage workflows without direct user intervention.
 
 ## What is n8n?
 
@@ -99,7 +99,7 @@ testing:
 
 Following the architecture pattern of
 [mcp-omnisearch](https://github.com/spences10/mcp-omnisearch), our
-implementation will use a modular approach:
+implementation uses a modular approach:
 
 ```mermaid
 graph TD
@@ -157,8 +157,8 @@ graph TD
 
 ## Schema Design with Zod
 
-We'll use Zod for schema validation throughout the application. Here's
-an example of how we'll define schemas:
+We use Zod for schema validation throughout the application. Here's an
+example of how we define schemas:
 
 ```typescript
 import { z } from 'zod';
@@ -199,247 +199,171 @@ export const CreateWorkflowInputSchema = z.object({
 });
 ```
 
-## MCP Tools Implementation
+## Implementation Status
 
-### Workflow Management Tools
+### Completed Features
 
-1. **list_workflows**
+1. **Core Infrastructure**
 
-   - Lists all workflows from n8n
-   - Supports filtering by tags, active status
-   - Returns paginated results
+   - MCP server setup with @modelcontextprotocol/sdk
+   - n8n API client implementation with robust error handling
+   - Comprehensive schema validation with Zod
+   - Detailed error handling and logging
+   - Published to npm as `mcp-n8n-builder` for easy installation
 
-2. **create_workflow**
+2. **Workflow Management Tools**
 
-   - Creates a new workflow in n8n
-   - Validates workflow structure with Zod
-   - Returns created workflow ID and details
+   - list_workflows: List all workflows with filtering options
+   - create_workflow: Create new workflows with optional activation
+   - get_workflow: Get detailed workflow information
+   - update_workflow: Update existing workflows
+   - delete_workflow: Delete workflows
+   - activate_workflow: Activate workflows
+   - deactivate_workflow: Deactivate workflows
 
-3. **get_workflow**
+3. **Execution Management Tools**
 
-   - Retrieves a workflow by its ID
-   - Returns complete workflow structure
-   - Includes execution statistics
+   - list_executions: List workflow executions with filtering
+   - get_execution: Get detailed execution information
 
-4. **update_workflow**
+4. **Output Verbosity Control**
 
-   - Updates an existing workflow
-   - Supports partial updates
-   - Validates changes with Zod
+   - Configurable output verbosity (concise vs. full)
+   - Preserves context window space when working with LLMs
+   - Per-request verbosity control for specific tools
 
-5. **delete_workflow**
+5. **Documentation**
+   - Comprehensive API reference
+   - Detailed setup guide
+   - Usage examples with Claude
+   - Schema reference
+   - n8n API endpoints documentation
+   - n8n API client implementation details
+   - Future enhancements roadmap
 
-   - Deletes a workflow by its ID
-   - Confirms deletion success
-   - Option to archive instead of delete
+### In Progress
 
-6. **activate_workflow**
+1. **Workflow Execution Features**
 
-   - Activates a workflow by its ID
-   - Validates workflow can be activated
-   - Returns activation status
+   - execute_workflow: Manually execute workflows by ID
+   - Improved error handling for workflow execution
 
-7. **deactivate_workflow**
-   - Deactivates a workflow by its ID
-   - Returns deactivation status
+2. **Advanced Trigger Node Handling**
+   - Intelligent detection of trigger nodes
+   - Automatic addition of trigger nodes when required for activation
 
-### Execution Management Tools
+### Planned Features
 
-1. **list_executions**
+1. **Workflow Templates**
 
-   - Lists all workflow executions
-   - Supports filtering by workflow, status, date
-   - Returns paginated results
+   - Predefined workflow templates for common use cases
+   - create_workflow_from_template tool
+   - Customizable templates with parameters
+   - Library of common node configurations
 
-2. **get_execution**
+2. **Tag Management**
 
-   - Retrieves details of a specific execution
-   - Includes execution data and results
-   - Shows node-by-node execution details
+   - list_tags: List all workflow tags
+   - create_tag: Create new tags
+   - update_tag: Update existing tags
+   - delete_tag: Delete tags
+   - assign_tag: Assign tags to workflows
+   - remove_tag: Remove tags from workflows
 
-3. **delete_execution**
-   - Deletes an execution by its ID
-   - Confirms deletion success
+3. **Advanced Workflow Management**
 
-### Credential Management Tools
+   - import_workflow: Import workflows from JSON or n8n backup
+   - export_workflow: Export workflows to JSON
+   - clone_workflow: Create a copy of an existing workflow
+   - workflow_versioning: Track and manage workflow versions
 
-1. **list_credentials**
+4. **Enhanced Execution Management**
 
-   - Lists all credential sets
-   - Filters by type, name
-   - Excludes sensitive information
+   - retry_execution: Retry failed executions
+   - delete_execution: Delete execution records
+   - execution_history: View execution history for a workflow
+   - execution_logs: View detailed logs for an execution
 
-2. **create_credential**
+5. **Credential Management**
 
-   - Creates a new credential set
-   - Securely handles sensitive information
-   - Validates credential structure
+   - list_credentials: List all credential configurations
+   - get_credential: Get credential configuration details
+   - create_credential: Create new credential configurations
+   - update_credential: Update credential configurations
+   - delete_credential: Delete credential configurations
 
-3. **delete_credential**
-   - Deletes a credential set by its ID
-   - Confirms deletion success
+6. **Variable Management**
 
-## MCP Resources Implementation
+   - list_variables: List all variables
+   - get_variable: Get variable details
+   - create_variable: Create new variables
+   - update_variable: Update variable values
+   - delete_variable: Delete variables
 
-### Static Resources
-
-1. **/nodes**
-
-   - List of all available n8n nodes
-   - Includes node descriptions and capabilities
-   - Updated periodically from n8n GitHub repository
-
-2. **/workflows**
-   - List of all available workflows
-   - Includes basic workflow information
-   - Updated in real-time from n8n API
-
-### Dynamic Resource Templates
-
-1. **/workflows/{id}**
-
-   - Detailed information about a specific workflow
-   - Includes complete workflow structure
-   - Updated in real-time from n8n API
-
-2. **/executions/{id}**
-   - Detailed information about a specific execution
-   - Includes execution data and results
-   - Shows node-by-node execution details
-
-## Implementation Plan
-
-### Phase 1: Core Infrastructure
-
-1. Set up project structure
-
-   - Initialize TypeScript project
-   - Configure build system
-   - Set up testing framework
-
-2. Implement MCP server core
-
-   - Set up MCP protocol handling
-   - Implement request/response lifecycle
-   - Configure error handling and logging
-
-3. Create n8n API client
-   - Implement authentication
-   - Create base API request functionality
-   - Add response parsing and error handling
-
-### Phase 2: Basic Workflow Management
-
-1. Implement workflow schemas with Zod
-
-   - Define node schema
-   - Create connection schema
-   - Build complete workflow schema
-
-2. Add basic workflow management tools
-
-   - Implement list_workflows
-   - Create get_workflow
-   - Add create_workflow
-
-3. Implement workflow resources
-   - Add /workflows static resource
-   - Create /workflows/{id} dynamic resource
-
-### Phase 3: Advanced Features
-
-1. Add execution management
-
-   - Implement list_executions
-   - Create get_execution
-   - Add delete_execution
-
-2. Implement credential management
-
-   - Add list_credentials
-   - Create create_credential
-   - Implement delete_credential
-
-3. Add workflow activation/deactivation
-   - Implement activate_workflow
-   - Create deactivate_workflow
-
-### Phase 4: Testing and Documentation
-
-1. Create comprehensive tests
-
-   - Unit tests for all components
-   - Integration tests with n8n API
-   - End-to-end tests with MCP client
-
-2. Write documentation
-
-   - API documentation
-   - Usage examples
-   - Installation and configuration guide
-
-3. Create example workflows
-   - Simple workflow examples
-   - Complex workflow templates
-   - Integration examples with popular services
-
-## Configuration
-
-The MCP server will be configured via environment variables:
-
-```typescript
-// Environment variables
-export const config = {
-	// n8n API configuration
-	n8nHost: process.env.N8N_HOST || 'http://localhost:5678/api/',
-	n8nApiKey: process.env.N8N_API_KEY || '',
-
-	// MCP server configuration
-	serverName: process.env.SERVER_NAME || 'n8n-workflow-builder',
-	serverVersion: process.env.SERVER_VERSION || '1.0.0',
-
-	// Logging configuration
-	logLevel: process.env.LOG_LEVEL || 'info',
-
-	// Cache configuration
-	cacheEnabled: process.env.CACHE_ENABLED === 'true',
-	cacheTTL: parseInt(process.env.CACHE_TTL || '300', 10),
-};
+7. **Enhanced Security**
+   - API key rotation
+   - Rate limiting
+   - Access control
+   - Improved error handling and validation
+
+## Next Steps
+
+### Short-term (1-2 weeks)
+
+1. Implement execute_workflow functionality
+2. Add intelligent trigger node handling
+3. Implement workflow templates system
+4. Add tag management tools
+5. Enhance error handling for common n8n API issues
+
+### Medium-term (1-2 months)
+
+1. Implement workflow import/export
+2. Add workflow versioning
+3. Enhance execution management with retry functionality
+4. Implement credential management
+5. Add more comprehensive testing
+
+### Long-term (3+ months)
+
+1. Implement variable management
+2. Add enhanced security features
+3. Create a web UI for managing the MCP server
+4. Add support for n8n cloud instances
+5. Implement workflow analytics and monitoring
+
+## Usage Notes
+
+Most users will interact with this tool through MCP configuration
+files rather than direct installation. A typical configuration in an
+MCP settings file would look like:
+
+```json
+{
+	"n8n-workflow-builder": {
+		"command": "npx",
+		"args": ["-y", "mcp-n8n-builder"],
+		"env": {
+			"N8N_HOST": "https://examplehost.com/api/v1",
+			"N8N_API_KEY": "secretkey",
+			"OUTPUT_VERBOSITY": "concise"
+		}
+	}
+}
 ```
 
-## Security Considerations
-
-1. **API Key Management**
-
-   - Secure storage of n8n API key
-   - No hardcoding of credentials
-   - Environment variable based configuration
-
-2. **Input Validation**
-
-   - Comprehensive validation with Zod
-   - Sanitization of user input
-   - Prevention of injection attacks
-
-3. **Error Handling**
-
-   - Detailed error messages for developers
-   - Sanitized error messages for users
-   - No leaking of sensitive information
-
-4. **Rate Limiting**
-   - Implementation of rate limiting
-   - Prevention of API abuse
-   - Configurable limits
+This approach allows for easy integration with AI assistants like
+Claude without requiring users to manually install or configure the
+tool.
 
 ## Conclusion
 
-This MCP server will provide a powerful interface for AI assistants to
-create and manage n8n workflows. By leveraging the lessons learned
-from existing implementations and following best practices for MCP
-server development, we can create a robust and secure solution.
+The n8n Workflow Builder MCP server provides a powerful interface for
+AI assistants to create and manage n8n workflows. By leveraging the
+n8n REST API and the Model Context Protocol, we enable seamless
+integration between AI assistants and workflow automation.
 
-The modular architecture and comprehensive schema validation will
-ensure that the server is maintainable and extensible, while the
-comprehensive tool and resource implementations will provide a rich
-interface for AI assistants to work with.
+The project is published on npm as `mcp-n8n-builder` with core
+functionality implemented. We continue to work on enhancing the
+feature set and improving the user experience based on feedback from
+the community and comparison with other implementations.
