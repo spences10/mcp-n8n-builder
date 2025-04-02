@@ -36,7 +36,8 @@ Add this to your Cline MCP settings:
 			"args": ["-y", "mcp-n8n-builder"],
 			"env": {
 				"N8N_HOST": "http://localhost:5678/api/v1",
-				"N8N_API_KEY": "your-n8n-api-key"
+				"N8N_API_KEY": "your-n8n-api-key",
+				"OUTPUT_VERBOSITY": "concise" // Options: 'concise' or 'full'
 			}
 		}
 	}
@@ -55,7 +56,7 @@ For WSL environments, add this to your Claude Desktop configuration:
 			"args": [
 				"bash",
 				"-c",
-				"source ~/.nvm/nvm.sh && N8N_HOST=http://localhost:5678/api/v1 N8N_API_KEY=your-n8n-api-key /home/username/.nvm/versions/node/v20.12.1/bin/npx mcp-n8n-builder"
+				"source ~/.nvm/nvm.sh && N8N_HOST=http://localhost:5678/api/v1 N8N_API_KEY=your-n8n-api-key OUTPUT_VERBOSITY=concise /home/username/.nvm/versions/node/v20.12.1/bin/npx mcp-n8n-builder"
 			]
 		}
 	}
@@ -66,15 +67,16 @@ For WSL environments, add this to your Claude Desktop configuration:
 
 The server can be configured using environment variables:
 
-| Variable         | Description                    | Default                        |
-| ---------------- | ------------------------------ | ------------------------------ |
-| `N8N_HOST`       | URL of the n8n API             | `http://localhost:5678/api/v1` |
-| `N8N_API_KEY`    | API key for n8n authentication | `""`                           |
-| `SERVER_NAME`    | Name of the MCP server         | `"n8n-workflow-builder"`       |
-| `SERVER_VERSION` | Version of the MCP server      | Package version                |
-| `LOG_LEVEL`      | Logging level                  | `"info"`                       |
-| `CACHE_ENABLED`  | Enable caching                 | `false`                        |
-| `CACHE_TTL`      | Cache TTL in seconds           | `300`                          |
+| Variable           | Description                                  | Default                        |
+| ------------------ | -------------------------------------------- | ------------------------------ |
+| `N8N_HOST`         | URL of the n8n API                           | `http://localhost:5678/api/v1` |
+| `N8N_API_KEY`      | API key for n8n authentication               | `""`                           |
+| `SERVER_NAME`      | Name of the MCP server                       | `"n8n-workflow-builder"`       |
+| `SERVER_VERSION`   | Version of the MCP server                    | Package version                |
+| `LOG_LEVEL`        | Logging level                                | `"info"`                       |
+| `CACHE_ENABLED`    | Enable caching                               | `false`                        |
+| `CACHE_TTL`        | Cache TTL in seconds                         | `300`                          |
+| `OUTPUT_VERBOSITY` | Output verbosity level (`concise` or `full`) | `"concise"`                    |
 
 ## MCP Tools
 

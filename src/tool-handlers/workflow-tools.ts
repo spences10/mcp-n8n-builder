@@ -2,11 +2,39 @@ import {
 	ErrorCode,
 	McpError,
 } from '@modelcontextprotocol/sdk/types.js';
+import { config } from '../config.js';
 import { N8nApiClient } from '../n8n-api-client.js';
 import {
 	CreateWorkflowInputSchema,
 	WorkflowSchema,
 } from '../schemas.js';
+
+/**
+ * Helper function to format output based on verbosity setting
+ * @param summary The human-readable summary text
+ * @param details The full JSON details
+ * @param verbosity The verbosity level (concise or full)
+ * @returns Formatted text based on verbosity setting
+ */
+function format_output(
+	summary: string,
+	details: any,
+	verbosity?: string,
+): string {
+	// Use the provided verbosity parameter if available, otherwise fall back to config
+	const output_verbosity = verbosity || config.output_verbosity;
+
+	if (output_verbosity === 'full') {
+		return (
+			summary +
+			'\n\nFull details:\n' +
+			JSON.stringify(details, null, 2)
+		);
+	} else {
+		// Default to concise mode
+		return summary;
+	}
+}
 
 /**
  * Handles the list_workflows tool
@@ -58,11 +86,11 @@ export async function handle_list_workflows(
 			content: [
 				{
 					type: 'text',
-					text:
-						summary +
-						workflow_list +
-						'\n\nFull details:\n' +
-						JSON.stringify(workflows, null, 2),
+					text: format_output(
+						summary + workflow_list,
+						workflows,
+						args.verbosity,
+					),
 				},
 			],
 		};
@@ -175,10 +203,7 @@ Tags: ${
 			content: [
 				{
 					type: 'text',
-					text:
-						summary +
-						'\n\nFull details:\n' +
-						JSON.stringify(workflow, null, 2),
+					text: format_output(summary, workflow, args.verbosity),
 				},
 			],
 		};

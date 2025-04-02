@@ -2,7 +2,35 @@ import {
 	ErrorCode,
 	McpError,
 } from '@modelcontextprotocol/sdk/types.js';
+import { config } from '../config.js';
 import { N8nApiClient } from '../n8n-api-client.js';
+
+/**
+ * Helper function to format output based on verbosity setting
+ * @param summary The human-readable summary text
+ * @param details The full JSON details
+ * @param verbosity The verbosity level (concise or full)
+ * @returns Formatted text based on verbosity setting
+ */
+function format_output(
+	summary: string,
+	details: any,
+	verbosity?: string,
+): string {
+	// Use the provided verbosity parameter if available, otherwise fall back to config
+	const output_verbosity = verbosity || config.output_verbosity;
+
+	if (output_verbosity === 'full') {
+		return (
+			summary +
+			'\n\nFull details:\n' +
+			JSON.stringify(details, null, 2)
+		);
+	} else {
+		// Default to concise mode
+		return summary;
+	}
+}
 
 /**
  * Handles the list_executions tool
@@ -81,11 +109,11 @@ export async function handle_list_executions(
 			content: [
 				{
 					type: 'text',
-					text:
-						summary +
-						execution_list +
-						'\n\nFull details:\n' +
-						JSON.stringify(executions, null, 2),
+					text: format_output(
+						summary + execution_list,
+						executions,
+						args.verbosity,
+					),
 				},
 			],
 		};
@@ -161,10 +189,7 @@ Duration: ${duration_text}`;
 			content: [
 				{
 					type: 'text',
-					text:
-						summary +
-						'\n\nFull details:\n' +
-						JSON.stringify(execution, null, 2),
+					text: format_output(summary, execution, args.verbosity),
 				},
 			],
 		};

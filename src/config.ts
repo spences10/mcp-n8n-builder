@@ -26,4 +26,10 @@ export const config = {
 	// Cache configuration
 	cache_enabled: process.env.CACHE_ENABLED === 'true',
 	cache_ttl: parseInt(process.env.CACHE_TTL || '300', 10),
+
+	// Output configuration
+	// Controls how verbose the tool output is
+	// 'concise' - Only includes essential information (default)
+	// 'full' - Includes all details including full JSON responses
+	output_verbosity: process.env.OUTPUT_VERBOSITY || 'concise',
 };

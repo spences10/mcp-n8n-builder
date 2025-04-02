@@ -52,6 +52,12 @@ export function setup_tool_handlers(
 							type: 'string',
 							description: 'Filter by workflow name',
 						},
+						verbosity: {
+							type: 'string',
+							description:
+								'Output verbosity level (concise or full). Default is concise which preserves context window space. Use full when you need complete workflow details.',
+							enum: ['concise', 'full'],
+						},
 					},
 				},
 			},
@@ -113,6 +119,12 @@ export function setup_tool_handlers(
 							type: 'string',
 							description:
 								'ID of the workflow to retrieve - can be obtained from list_workflows',
+						},
+						verbosity: {
+							type: 'string',
+							description:
+								'Output verbosity level (concise or full). Default is concise which preserves context window space. Use full when you need complete workflow details including all nodes and connections.',
+							enum: ['concise', 'full'],
 						},
 					},
 					required: ['id'],
@@ -235,6 +247,12 @@ export function setup_tool_handlers(
 							description:
 								'Maximum number of executions to return - useful for workflows with many executions',
 						},
+						verbosity: {
+							type: 'string',
+							description:
+								'Output verbosity level (concise or full). Default is concise which preserves context window space. Use full when you need complete execution details.',
+							enum: ['concise', 'full'],
+						},
 					},
 				},
 			},
@@ -254,6 +272,12 @@ export function setup_tool_handlers(
 							type: 'boolean',
 							description:
 								'Whether to include detailed execution data showing the input/output at each node (may be large for complex workflows)',
+						},
+						verbosity: {
+							type: 'string',
+							description:
+								'Output verbosity level (concise or full). Default is concise which preserves context window space. Use full when you need complete execution details.',
+							enum: ['concise', 'full'],
 						},
 					},
 					required: ['id'],

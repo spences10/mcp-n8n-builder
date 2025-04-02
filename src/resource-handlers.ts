@@ -6,7 +6,72 @@ import {
 	McpError,
 	ReadResourceRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
+import { config } from './config.js';
 import { N8nApiClient } from './n8n-api-client.js';
+
+/**
+ * Helper function to format output based on verbosity setting
+ * @param data The data to format
+ * @param verbosity The verbosity level (concise or full)
+ * @returns Formatted JSON based on verbosity setting
+ */
+function format_resource_output(
+	data: any,
+	verbosity?: string,
+): string {
+	// Use the provided verbosity parameter if available, otherwise fall back to config
+	const output_verbosity = verbosity || config.output_verbosity;
+
+	if (output_verbosity === 'full') {
+		return JSON.stringify(data, null, 2);
+	} else {
+		// For concise mode, we'll still return JSON but with a more compact representation
+		// This ensures the AI can still parse the data but it takes up less context window space
+		const simplified = Array.isArray(data)
+			? data.map(simplify_object)
+			: simplify_object(data);
+
+		return JSON.stringify(simplified, null, 2);
+	}
+}
+
+/**
+ * Simplifies an object by keeping only essential fields
+ * @param obj The object to simplify
+ * @returns A simplified version of the object
+ */
+function simplify_object(obj: any): any {
+	if (!obj || typeof obj !== 'object') return obj;
+
+	// For workflows, keep only essential fields
+	if (obj.name && obj.id && obj.nodes) {
+		return {
+			id: obj.id,
+			name: obj.name,
+			active: obj.active,
+			created_at: obj.created_at,
+			updated_at: obj.updated_at,
+			node_count: obj.nodes?.length || 0,
+			tags: obj.tags?.map((tag: any) => tag.name) || [],
+		};
+	}
+
+	// For executions, keep only essential fields
+	if (obj.id && obj.workflowId && obj.startedAt) {
+		return {
+			id: obj.id,
+			workflowId: obj.workflowId,
+			status: obj.status,
+			startedAt: obj.startedAt,
+			stoppedAt: obj.stoppedAt,
+			finished: obj.finished,
+			mode: obj.mode,
+		};
+	}
+
+	// Default case, return the object as is
+	return obj;
+}
 
 /**
  * Sets up MCP resource handlers for the n8n workflow builder server
@@ -63,7 +128,7 @@ export function setup_resource_handlers(
 							{
 								uri,
 								mimeType: 'application/json',
-								text: JSON.stringify(workflows, null, 2),
+								text: format_resource_output(workflows),
 							},
 						],
 					};
@@ -88,7 +153,7 @@ export function setup_resource_handlers(
 							{
 								uri,
 								mimeType: 'application/json',
-								text: JSON.stringify(workflow, null, 2),
+								text: format_resource_output(workflow),
 							},
 						],
 					};
@@ -115,7 +180,7 @@ export function setup_resource_handlers(
 							{
 								uri,
 								mimeType: 'application/json',
-								text: JSON.stringify(execution, null, 2),
+								text: format_resource_output(execution),
 							},
 						],
 					};
