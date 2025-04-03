@@ -9,6 +9,42 @@ import {
 	CreateWorkflowInputSchema,
 	WorkflowSchema,
 } from '../schemas.js';
+import { WORKFLOW_COMPOSITION_GUIDE } from '../workflow-composition-guide.js';
+
+/**
+ * Helper function to handle validation errors with helpful guidance
+ * @param error The Zod validation error
+ * @returns Formatted error response with guidance from the workflow composition guide
+ */
+function handle_validation_error(error: any) {
+	// Extract the error message
+	const error_message = error.message || 'Validation error';
+
+	// Determine which sections of the guide to include based on the error
+	let guidance = '';
+
+	// Check for common error patterns
+	if (error_message.includes('nodes')) {
+		guidance += WORKFLOW_COMPOSITION_GUIDE.node_categories;
+	} else if (error_message.includes('connections')) {
+		guidance += WORKFLOW_COMPOSITION_GUIDE.common_patterns;
+	} else if (error_message.includes('trigger')) {
+		guidance += WORKFLOW_COMPOSITION_GUIDE.core_principles;
+	} else {
+		// Default guidance
+		guidance += WORKFLOW_COMPOSITION_GUIDE.workflow_creation_process;
+	}
+
+	return {
+		content: [
+			{
+				type: 'text',
+				text: `Validation error: ${error_message}\n\nHere's some guidance that might help:\n\n${guidance}`,
+			},
+		],
+		isError: true,
+	};
+}
 
 /**
  * Helper function to format output based on verbosity setting
@@ -136,13 +172,19 @@ export async function handle_create_workflow(
 				return `- '${node.node_type}': Not a valid n8n node. ${suggestion}`;
 			});
 
+			// Include relevant sections from the workflow composition guide
+			const node_categories =
+				WORKFLOW_COMPOSITION_GUIDE.node_categories;
+
 			return {
 				content: [
 					{
 						type: 'text',
-						text: `Workflow contains invalid node types:\n${error_messages.join(
-							'\n',
-						)}\n\nPlease correct these node types before creating the workflow.`,
+						text:
+							`Workflow contains invalid node types:\n${error_messages.join(
+								'\n',
+							)}\n\nPlease correct these node types before creating the workflow.\n\n` +
+							`Here are the available node categories for reference:\n${node_categories}`,
 					},
 				],
 				isError: true,
@@ -168,15 +210,7 @@ export async function handle_create_workflow(
 		};
 	} catch (error: any) {
 		if (error.name === 'ZodError') {
-			return {
-				content: [
-					{
-						type: 'text',
-						text: `Validation error: ${error.message}`,
-					},
-				],
-				isError: true,
-			};
+			return handle_validation_error(error);
 		}
 		return {
 			content: [
@@ -284,13 +318,19 @@ export async function handle_update_workflow(
 				return `- '${node.node_type}': Not a valid n8n node. ${suggestion}`;
 			});
 
+			// Include relevant sections from the workflow composition guide
+			const node_categories =
+				WORKFLOW_COMPOSITION_GUIDE.node_categories;
+
 			return {
 				content: [
 					{
 						type: 'text',
-						text: `Workflow contains invalid node types:\n${error_messages.join(
-							'\n',
-						)}\n\nPlease correct these node types before updating the workflow.`,
+						text:
+							`Workflow contains invalid node types:\n${error_messages.join(
+								'\n',
+							)}\n\nPlease correct these node types before updating the workflow.\n\n` +
+							`Here are the available node categories for reference:\n${node_categories}`,
 					},
 				],
 				isError: true,
@@ -314,15 +354,7 @@ export async function handle_update_workflow(
 		};
 	} catch (error: any) {
 		if (error.name === 'ZodError') {
-			return {
-				content: [
-					{
-						type: 'text',
-						text: `Validation error: ${error.message}`,
-					},
-				],
-				isError: true,
-			};
+			return handle_validation_error(error);
 		}
 		return {
 			content: [
@@ -407,6 +439,27 @@ export async function handle_activate_workflow(
 			],
 		};
 	} catch (error: any) {
+		// Check for common activation errors
+		if (error.message && error.message.includes('trigger')) {
+			// This is likely an error about missing trigger nodes
+			const core_principles =
+				WORKFLOW_COMPOSITION_GUIDE.core_principles;
+
+			return {
+				content: [
+					{
+						type: 'text',
+						text:
+							`Error activating workflow: ${error.message}\n\n` +
+							`Note: Only workflows with automatic trigger nodes (Schedule, Webhook, etc.) can be activated. ` +
+							`Workflows with only manual triggers cannot be automatically activated.\n\n` +
+							`Here are some core principles for workflow composition:\n${core_principles}`,
+					},
+				],
+				isError: true,
+			};
+		}
+
 		return {
 			content: [
 				{
