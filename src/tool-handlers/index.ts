@@ -41,7 +41,19 @@ export function setup_tool_handlers(
 					'Lists all available nodes in the n8n instance. Use this tool BEFORE creating or updating workflows to ensure you only use valid node types. This helps prevent errors caused by using node types that do not exist in the current n8n instance.',
 				inputSchema: {
 					type: 'object',
-					properties: {},
+					properties: {
+						verbosity: {
+							type: 'string',
+							description:
+								'Output verbosity level (concise, summary, or full). Default is concise which preserves context window space. Use summary for just category counts, or full for complete node details including descriptions.',
+							enum: ['concise', 'summary', 'full'],
+						},
+						category: {
+							type: 'string',
+							description:
+								'Filter nodes by category (e.g., "n8n-nodes-base")',
+						},
+					},
 				},
 			},
 			{
@@ -304,7 +316,7 @@ export function setup_tool_handlers(
 		try {
 			switch (name) {
 				case 'list_available_nodes':
-					return await handle_list_available_nodes();
+					return await handle_list_available_nodes(args);
 				case 'list_workflows':
 					return await handle_list_workflows(api_client, args);
 				case 'create_workflow':

@@ -11,8 +11,17 @@ import { node_validator } from '../node-validator.js';
  *
  * This tool returns a list of all available nodes in the n8n instance.
  * LLMs should use this before creating workflows to ensure they only use valid nodes.
+ *
+ * @param params Tool parameters
+ * @param params.verbosity Output verbosity level (default: 'concise')
+ * @param params.category Optional category filter
  */
-export async function handle_list_available_nodes() {
+export async function handle_list_available_nodes(
+	params: {
+		verbosity?: 'concise' | 'summary' | 'full';
+		category?: string;
+	} = {},
+) {
 	try {
 		const nodes = await node_validator.get_available_nodes();
 
@@ -38,32 +47,63 @@ export async function handle_list_available_nodes() {
 			});
 		}
 
-		// Create a summary of available nodes
-		const summary =
-			`Found ${nodes.length} available nodes in the n8n instance.\n\n` +
-			`When creating workflows, use these exact node types to ensure compatibility.\n\n` +
-			`Available nodes by category:\n\n` +
-			Object.entries(grouped_nodes)
-				.map(([category, nodes]) => {
-					return (
-						`## ${category}\n\n` +
-						nodes
-							.map(
-								(node) =>
-									`- \`${node.name}\`: ${node.display_name}${
-										node.description ? ` - ${node.description}` : ''
-									}`,
-							)
-							.join('\n')
-					);
-				})
-				.join('\n\n');
+		// Filter by category if specified
+		let filtered_categories = Object.entries(grouped_nodes);
+		if (params.category) {
+			filtered_categories = filtered_categories.filter(
+				([category]) =>
+					category.toLowerCase() === params.category?.toLowerCase(),
+			);
+		}
+
+		// Determine verbosity level
+		const verbosity = params.verbosity || 'concise';
+
+		let output = '';
+
+		// Create header
+		output += `Found ${nodes.length} available nodes in the n8n instance.\n\n`;
+		output += `When creating workflows, use these exact node types to ensure compatibility.\n\n`;
+
+		// For summary mode, just show counts by category
+		if (verbosity === 'summary') {
+			output += `Node counts by category:\n\n`;
+			filtered_categories.forEach(([category, nodes]) => {
+				output += `- ${category}: ${nodes.length} nodes\n`;
+			});
+			return {
+				content: [{ type: 'text', text: output }],
+			};
+		}
+
+		// For concise or full mode, show nodes by category
+		output += `Available nodes by category:\n\n`;
+
+		output += filtered_categories
+			.map(([category, nodes]) => {
+				return (
+					`## ${category}\n\n` +
+					nodes
+						.map((node) => {
+							if (verbosity === 'full') {
+								return `- \`${node.name}\`: ${node.display_name}${
+									node.description ? ` - ${node.description}` : ''
+								}`;
+							} else {
+								// Concise mode - just show name and display name
+								return `- \`${node.name}\`: ${node.display_name}`;
+							}
+						})
+						.join('\n')
+				);
+			})
+			.join('\n\n');
 
 		return {
 			content: [
 				{
 					type: 'text',
-					text: summary,
+					text: output,
 				},
 			],
 		};
