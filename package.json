@@ -1,6 +1,6 @@
 {
   "name": "mcp-n8n-builder",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "MCP server for building n8n workflows",
   "type": "module",
   "main": "dist/index.js",
