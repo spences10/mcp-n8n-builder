@@ -23,6 +23,8 @@ import {
 	handle_list_executions,
 } from './execution-tools.js';
 
+import { handle_list_available_nodes } from './node-tools.js';
+
 /**
  * Sets up MCP tool handlers for the n8n workflow builder server
  */
@@ -33,6 +35,15 @@ export function setup_tool_handlers(
 	// List available tools
 	server.setRequestHandler(ListToolsRequestSchema, async () => ({
 		tools: [
+			{
+				name: 'list_available_nodes',
+				description:
+					'Lists all available nodes in the n8n instance. Use this tool BEFORE creating or updating workflows to ensure you only use valid node types. This helps prevent errors caused by using node types that do not exist in the current n8n instance.',
+				inputSchema: {
+					type: 'object',
+					properties: {},
+				},
+			},
 			{
 				name: 'list_workflows',
 				description:
@@ -292,6 +303,8 @@ export function setup_tool_handlers(
 
 		try {
 			switch (name) {
+				case 'list_available_nodes':
+					return await handle_list_available_nodes();
 				case 'list_workflows':
 					return await handle_list_workflows(api_client, args);
 				case 'create_workflow':

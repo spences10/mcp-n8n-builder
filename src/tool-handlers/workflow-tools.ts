@@ -4,6 +4,7 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 import { config } from '../config.js';
 import { N8nApiClient } from '../n8n-api-client.js';
+import { node_validator } from '../node-validator.js';
 import {
 	CreateWorkflowInputSchema,
 	WorkflowSchema,
@@ -119,6 +120,34 @@ export async function handle_create_workflow(
 	try {
 		// Validate input with Zod
 		const parsed_input = CreateWorkflowInputSchema.parse(args);
+
+		// Validate that all nodes exist in n8n
+		const invalid_nodes =
+			await node_validator.validate_workflow_nodes(
+				parsed_input.workflow.nodes,
+			);
+
+		if (invalid_nodes.length > 0) {
+			// Format error message with suggestions
+			const error_messages = invalid_nodes.map((node) => {
+				const suggestion = node.suggestion
+					? `Did you mean '${node.suggestion}'?`
+					: 'No similar nodes found.';
+				return `- '${node.node_type}': Not a valid n8n node. ${suggestion}`;
+			});
+
+			return {
+				content: [
+					{
+						type: 'text',
+						text: `Workflow contains invalid node types:\n${error_messages.join(
+							'\n',
+						)}\n\nPlease correct these node types before creating the workflow.`,
+					},
+				],
+				isError: true,
+			};
+		}
 
 		const workflow = await api_client.create_workflow(
 			parsed_input.workflow,
@@ -239,6 +268,34 @@ export async function handle_update_workflow(
 	try {
 		// Validate workflow with Zod
 		const parsed_workflow = WorkflowSchema.parse(args.workflow);
+
+		// Validate that all nodes exist in n8n
+		const invalid_nodes =
+			await node_validator.validate_workflow_nodes(
+				parsed_workflow.nodes,
+			);
+
+		if (invalid_nodes.length > 0) {
+			// Format error message with suggestions
+			const error_messages = invalid_nodes.map((node) => {
+				const suggestion = node.suggestion
+					? `Did you mean '${node.suggestion}'?`
+					: 'No similar nodes found.';
+				return `- '${node.node_type}': Not a valid n8n node. ${suggestion}`;
+			});
+
+			return {
+				content: [
+					{
+						type: 'text',
+						text: `Workflow contains invalid node types:\n${error_messages.join(
+							'\n',
+						)}\n\nPlease correct these node types before updating the workflow.`,
+					},
+				],
+				isError: true,
+			};
+		}
 
 		const workflow = await api_client.update_workflow(
 			args.id,

@@ -13,6 +13,10 @@ modify, and manage workflows without direct user intervention.
   details
 - ✅ **Schema Validation**: Comprehensive validation with Zod for both
   input and output data
+- 🔍 **Node Validation**: Validates node types against n8n's available
+  nodes before workflow creation to prevent errors
+- 🤔 **Smart Suggestions**: Provides suggestions for similar node
+  types when invalid nodes are detected
 - 🛠️ **Error Handling**: Detailed error messages for troubleshooting
 - 📝 **Documentation**: Extensive documentation for all tools and
   resources
@@ -56,7 +60,7 @@ For WSL environments, add this to your Claude Desktop configuration:
 			"args": [
 				"bash",
 				"-c",
-				"source ~/.nvm/nvm.sh && N8N_HOST=http://localhost:5678/api/v1 N8N_API_KEY=your-n8n-api-key OUTPUT_VERBOSITY=concise /home/username/.nvm/versions/node/v20.12.1/bin/npx mcp-n8n-builder"
+				"N8N_HOST=http://localhost:5678/api/v1 N8N_API_KEY=your-n8n-api-key OUTPUT_VERBOSITY=concise npx -y mcp-n8n-builder"
 			]
 		}
 	}
@@ -80,6 +84,14 @@ The server can be configured using environment variables:
 
 ## MCP Tools
 
+### Node Management
+
+- `list_available_nodes`: Lists all available nodes in the n8n
+  instance. **IMPORTANT**: Use this tool BEFORE creating or updating
+  workflows to ensure you only use valid node types. This helps
+  prevent errors caused by using node types that don't exist in the
+  current n8n instance.
+
 ### Workflow Management
 
 - `list_workflows`: Lists all workflows from n8n with their basic
@@ -87,12 +99,14 @@ The server can be configured using environment variables:
   Results can be filtered by active status, tags, or name.
 - `create_workflow`: Creates a new workflow in n8n with specified
   nodes and connections. Returns the created workflow with its
-  assigned ID.
+  assigned ID. Validates that all node types exist in the n8n
+  instance.
 - `get_workflow`: Retrieves complete details of a specific workflow by
   its ID, including all nodes, connections, settings, and metadata.
 - `update_workflow`: Updates an existing workflow with new
   configuration. The entire workflow structure must be provided, not
-  just the parts being changed.
+  just the parts being changed. Validates that all node types exist in
+  the n8n instance.
 - `delete_workflow`: Permanently deletes a workflow by its ID. This
   action cannot be undone.
 - `activate_workflow`: Activates a workflow by its ID, enabling it to
