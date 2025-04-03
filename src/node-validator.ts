@@ -142,13 +142,10 @@ export class NodeValidator {
 	 */
 	private async fetch_node_registry(): Promise<void> {
 		try {
-			// Fetch the list of available nodes from the n8n API
-			const response = await fetch(`${config.n8n_host}/node-types`, {
-				headers: {
-					Accept: 'application/json',
-					'X-N8N-API-KEY': config.n8n_api_key,
-				},
-			});
+			// Fetch the list of available nodes from the n8n types endpoint
+			const response = await fetch(
+				`${config.n8n_host}/types/nodes.json`,
+			);
 
 			if (!response.ok) {
 				throw new Error(
@@ -162,14 +159,15 @@ export class NodeValidator {
 			this.node_registry.clear();
 
 			// Process the nodes
-			if (data && Array.isArray(data.data)) {
-				for (const node of data.data) {
+			if (data && typeof data === 'object') {
+				for (const node_key in data) {
+					const node = data[node_key];
 					if (node.name) {
 						this.node_registry.set(node.name, {
 							name: node.name,
 							display_name: node.displayName || node.name,
 							description: node.description,
-							type: node.type,
+							type: node.group?.join(', '),
 							version: node.version,
 						});
 					}

@@ -38,7 +38,7 @@ export class N8nApiClient {
 		endpoint: string,
 		data?: any,
 	): Promise<T> {
-		const url = `${this.base_url}${endpoint}`;
+		const url = `${this.base_url}/api/v1${endpoint}`;
 
 		const headers: HeadersInit = {
 			'Content-Type': 'application/json',
