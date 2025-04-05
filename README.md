@@ -5,6 +5,10 @@ management of n8n workflows. This server provides tools and resources
 for interacting with n8n's REST API, allowing AI assistants to build,
 modify, and manage workflows without direct user intervention.
 
+<a href="https://glama.ai/mcp/servers/@spences10/mcp-n8n-builder">
+  <img width="380" height="200" src="https://glama.ai/mcp/servers/@spences10/mcp-n8n-builder/badge" />
+</a>
+
 ## Features
 
 - 🔄 **Workflow Management**: Create, read, update, delete, activate,
