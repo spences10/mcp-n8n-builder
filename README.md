@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/spences10-mcp-n8n-builder-badge.png)](https://mseep.ai/app/spences10-mcp-n8n-builder)
+
 # mcp-n8n-builder
 
 A Model Context Protocol (MCP) server for programmatic creation and
