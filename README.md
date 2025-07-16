@@ -27,6 +27,32 @@ modify, and manage workflows without direct user intervention.
 - 🔍 **Search & Filter**: Filter workflows by name, tags, or active
   status
 
+## ⚠️ Token Consumption Warning
+
+This tool is a "token monster" due to the nature of n8n workflows:
+
+- **N8N workflows are complex JSON structures** with nested nodes, connections, parameters, and settings
+- **A single workflow can easily consume thousands of tokens** when viewed or edited
+- **The JSON structure cannot be meaningfully reduced** without losing essential workflow information
+- **LLM context windows are finite** - complex workflows may exceed available context
+
+### Mitigation Strategies
+
+The tool implements several optimizations to reduce token usage:
+
+- **Verbosity Control**: Use `OUTPUT_VERBOSITY=concise` (default) for summaries instead of full JSON
+- **Object Simplification**: Workflow listings show only essential fields (id, name, status, node count)
+- **Selective Guide Inclusion**: Error messages include only relevant sections of the composition guide
+- **Per-tool Verbosity**: Override verbosity on individual tool calls with the `verbosity` parameter
+
+### Recommended Usage
+
+- **List workflows first** to identify what you need (low token cost)
+- **Work with simple workflows** when possible
+- **Use `concise` verbosity** unless you specifically need full JSON
+- **Break complex workflows into smaller pieces** for easier management
+- **Consider the token cost** before retrieving or editing large workflows
+
 ## Configuration
 
 This server requires configuration through your MCP client. Here are
