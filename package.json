@@ -30,12 +30,12 @@
   "author": "Scott Spence",
   "license": "MIT",
   "devDependencies": {
-    "@changesets/cli": "^2.29.4",
+    "@changesets/cli": "^2.29.5",
     "@types/node": "^22.15.18",
     "typescript": "^5.8.3",
     "zod": "^3.24.4"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.11.2"
+    "@modelcontextprotocol/sdk": "^1.15.1"
   }
 }
