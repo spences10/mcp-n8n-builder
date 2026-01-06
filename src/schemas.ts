@@ -6,9 +6,9 @@ export const NodeSchema = z.object({
 	name: z.string(),
 	type: z.string(),
 	position: z.array(z.number()).length(2), // n8n API expects position as [x, y] array
-	parameters: z.record(z.any()).optional(),
+	parameters: z.record(z.string(), z.any()).optional(),
 	typeVersion: z.number().optional(),
-	credentials: z.record(z.any()).optional(),
+	credentials: z.record(z.string(), z.any()).optional(),
 });
 
 // Connection schema
@@ -38,10 +38,10 @@ export const WorkflowSchema = z.object({
 	name: z.string(),
 	active: z.boolean().optional(),
 	nodes: z.array(NodeSchema),
-	connections: z.record(z.record(z.array(z.array(ConnectionSchema)))),
+	connections: z.record(z.string(), z.record(z.string(), z.array(z.array(ConnectionSchema)))),
 	settings: WorkflowSettingsSchema,
 	staticData: z
-		.union([z.string().nullable(), z.record(z.any()).nullable()])
+		.union([z.string().nullable(), z.record(z.string(), z.any()).nullable()])
 		.optional(),
 });
 
@@ -63,5 +63,5 @@ export const ExecutionSchema = z.object({
 	stoppedAt: z.string().optional(),
 	workflowId: z.string(),
 	waitTill: z.string().optional(),
-	customData: z.record(z.any()).optional(),
+	customData: z.record(z.string(), z.any()).optional(),
 });

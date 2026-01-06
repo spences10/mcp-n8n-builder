@@ -154,6 +154,10 @@ export async function handle_create_workflow(
 	args: any,
 ) {
 	try {
+		// Debug: Log the incoming args to understand the structure
+		console.error('[DEBUG] create_workflow args type:', typeof args);
+		console.error('[DEBUG] create_workflow args:', JSON.stringify(args, null, 2));
+		
 		// Validate input with Zod
 		const parsed_input = CreateWorkflowInputSchema.parse(args);
 
