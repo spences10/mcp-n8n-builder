@@ -32,7 +32,7 @@
   "devDependencies": {
     "@changesets/cli": "^2.29.5",
     "@types/node": "^22.15.18",
-    "typescript": "^5.8.3",
+    "typescript": "^6.0.0",
     "zod": "^4.0.0"
   },
   "dependencies": {
