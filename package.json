@@ -30,7 +30,7 @@
   "author": "Scott Spence",
   "license": "MIT",
   "devDependencies": {
-    "@changesets/cli": "^2.29.5",
+    "@changesets/cli": "^3.0.0",
     "@types/node": "^22.15.18",
     "typescript": "^5.8.3",
     "zod": "^4.0.0"
